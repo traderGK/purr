@@ -53,7 +53,7 @@ export DEVELOPER_DIR
 .PHONY: app run dmg notarize-app clean
 
 app:
-	swift build -c $(CONFIG) --arch arm64
+	swift build -c $(CONFIG) --arch arm64 $(EXTRA_SWIFT_FLAGS)
 	@mkdir -p $(MACOS_DIR) $(RES_DIR) $(FRAMEWORKS_DIR)
 	@cp $(BUILD_DIR)/arm64-apple-macosx/$(CONFIG)/$(APP_NAME) $(MACOS_DIR)/$(APP_NAME)
 	@cp $(INFO_PLIST) $(CONTENTS)/Info.plist

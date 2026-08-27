@@ -1,7 +1,7 @@
 import Foundation
 import os.log
 
-#if canImport(FoundationModels)
+#if canImport(FoundationModels) && !DISABLE_AFM
 import FoundationModels
 #endif
 
@@ -148,7 +148,7 @@ final class MeetingSummarizer {
     //      current app/system locale is one Apple FM understands.
     @available(macOS 26.0, *)
     static var appleFoundationAvailable: Bool {
-        #if canImport(FoundationModels)
+        #if canImport(FoundationModels) && !DISABLE_AFM
         let model = SystemLanguageModel.default
         guard case .available = model.availability else { return false }
         return model.supportsLocale()
@@ -192,7 +192,7 @@ final class MeetingSummarizer {
 
         switch backend {
         case .appleFoundation:
-            #if canImport(FoundationModels)
+            #if canImport(FoundationModels) && !DISABLE_AFM
             if #available(macOS 26.0, *) {
                 do {
                     summary = try await runAppleFoundation(
@@ -292,7 +292,7 @@ final class MeetingSummarizer {
 
     @available(macOS 26.0, *)
     private func runAppleFoundation(transcript: String, roster: [String]) async throws -> String {
-        #if canImport(FoundationModels)
+        #if canImport(FoundationModels) && !DISABLE_AFM
         let session = LanguageModelSession(instructions: { Instructions(appleInstructions) })
         let prompt = appleUserPrompt(transcript: transcript, roster: roster)
         // Guided generation: the model fills a `MeetingMinutes` value via
@@ -343,7 +343,7 @@ final class MeetingSummarizer {
             """
     }
 
-    #if canImport(FoundationModels)
+    #if canImport(FoundationModels) && !DISABLE_AFM
     // Renders the structured minutes into the Markdown sidecar body. Empty
     // collections become `_None._` here, in Swift - the model never sees a
     // template, so it cannot fabricate placeholder content to fill one.
@@ -619,7 +619,7 @@ extension LlamaSession.LlamaError {
     }
 }
 
-#if canImport(FoundationModels)
+#if canImport(FoundationModels) && !DISABLE_AFM
 
 // Structured meeting minutes the Apple Foundation Model fills via guided
 // generation. The model emits an instance of this type directly through

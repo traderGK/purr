@@ -1,7 +1,7 @@
 import Foundation
 import os.log
 
-#if canImport(FoundationModels)
+#if canImport(FoundationModels) && !DISABLE_AFM
 import FoundationModels
 #endif
 
@@ -74,7 +74,7 @@ enum EditInterpreter {
     // user speaking instead of stalling the edit.
     static func warmUp() {
         if appleFoundationReady {
-            #if canImport(FoundationModels)
+            #if canImport(FoundationModels) && !DISABLE_AFM
             if #available(macOS 26.0, *) {
                 LanguageModelSession(instructions: systemPrompt).prewarm()
             }
@@ -109,7 +109,7 @@ enum EditInterpreter {
         -> VoiceEditPlan
     {
         if appleFoundationReady {
-            #if canImport(FoundationModels)
+            #if canImport(FoundationModels) && !DISABLE_AFM
             if #available(macOS 26.0, *) {
                 return try await interpretWithAppleFM(instruction: instruction, selection: selection)
             }
@@ -121,7 +121,7 @@ enum EditInterpreter {
         throw Failure.noBackend
     }
 
-    #if canImport(FoundationModels)
+    #if canImport(FoundationModels) && !DISABLE_AFM
     @available(macOS 26.0, *)
     private static func interpretWithAppleFM(
         instruction: String, selection: String
