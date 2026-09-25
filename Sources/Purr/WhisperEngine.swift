@@ -13,6 +13,9 @@ final class WhisperEngine: TranscriptionEngine {
     nonisolated let supportsStreaming: Bool = false
     nonisolated let modelIdentifier: String
 
+    // Detection is clamped to these instead of Whisper's full language set.
+    static let allowedLanguages = ["en", "nl", "tr"]
+
     private var pipe: WhisperKit?
     private var loadedModel: String?
     private let log = Logger(subsystem: "com.arunbrahma.purr", category: "whisper")
@@ -65,7 +68,14 @@ final class WhisperEngine: TranscriptionEngine {
         // audio-based detection, which is unreliable on short clips. Empty
         // string means auto-detect; plain transcription always auto-detects.
         let sourceLanguage = SettingsStore.shared.translationSourceLanguage
-        let language: String? = (translate && !sourceLanguage.isEmpty) ? sourceLanguage : nil
+        var language: String? = (translate && !sourceLanguage.isEmpty) ? sourceLanguage : nil
+        // Plain transcription: constrain Whisper's language detection to the
+        // languages actually spoken here (en/nl/tr). The global argmax over
+        // ~100 languages misfires on short clips; picking the most probable
+        // of the allowed set is reliable even on 1-2s utterances.
+        if language == nil, let probs = try? await pipe.detectLangauge(audioArray: samples).langProbs {
+            language = Self.allowedLanguages.max { (probs[$0] ?? -.infinity) < (probs[$1] ?? -.infinity) }
+        }
         let options = DecodingOptions(
             verbose: false,
             task: translate ? .translate : .transcribe,
